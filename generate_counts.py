@@ -1,21 +1,19 @@
 from collections import Counter
 
-knuth = open("words/knuth.txt", "r")
-output = open("words/word_counts.txt", "w")
+solutions = open("solutions.txt", "r")
+output = open("extension/words/word_counts.txt", "w")
 
-knuth_contents = knuth.read()
-words = knuth_contents.split("\n")
+solution_contents = solutions.read()
+words = solution_contents.split("\n")
+
+for i in range(len(words[0])):
+    counter = Counter([w[i] for w in words])
+    for gram, count in counter.items():
+        output.write(str(i) + "," + gram + "," + str(count) + "\n")
 
 counter = Counter("".join(words))
+for gram, count in counter.items():
+    output.write("5," + gram + "," + str(count) + "\n")
 
-for word in words:
-    counter.update(map(''.join, zip(word, word[1:])))
-    counter.update(map(''.join, zip(word, word[1:], word[2:])))
-    counter.update(map(''.join, zip(word, word[1:], word[2:], word[3:])))
-
-filtered_count = list(filter(lambda x: x[1] >= 10, counter.most_common()))
-for gram, count in filtered_count:
-    output.write(gram + " " + str(count) + "\n")
-
-knuth.close()
+solutions.close()
 output.close()
