@@ -1,4 +1,4 @@
-const wordleURLs = ["powerlanguage.co.uk/wordle/"];
+const wordleURLs = ["powerlanguage.co.uk/wordle/", "metzger.media/games/wordle-archive"];
 
 let nextWord = document.getElementById("next");
 let wordDiv = document.getElementById("words");
@@ -34,7 +34,7 @@ function pruneSearchSpace(words, res) {
             words = words.filter(w => w[i] != tile[0]);
           }
 
-          if (tile[1] != "absent") {
+          if (tile[1] != "absent" && tile[1] != "wrong") {
             counts[tile[0]] = counts.get(tile[0]) + 1;
           } else {
             potentialNots.push(tile[0]);
@@ -105,14 +105,19 @@ function getWord(words, allCounts) {
   let scoresString = wordsWithScores.sort((a, b) => b[1] - a[1]).map(x => `${x[0]} (${x[1]})`).join(", ");
   updateWordScores(`${wordsWithScores.length} possibilities: ${scoresString}`);
 
+  if (words.length == 1) {
+    updateWordScores("Nice one, it must be " + feasibleWords[0]);
+  }
+
   return bestWord;
 }
 
 
-function updateWordList(tab) {
+async function updateWordList(tab) {
+  await new Promise(r => setTimeout(r, 250));
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    function: getResults
+    function: tab.url.includes("archive") ? getResultsArchive : getResults
   }, (frameResults) => {
     let res = frameResults[0].result;
     feasibleWords = pruneSearchSpace(feasibleWords, res);
@@ -133,9 +138,9 @@ nextWord.addEventListener("click", async () => {
   if (wordleURLs.some(url => tab.url.includes(url))) {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      function: enterWord,
+      function: tab.url.includes("archive") ? enterWordArchive : enterWord,
       args: [bestNextWord]
-    }, () => { updateWordList(tab)});
+    }, () => { updateWordList(tab) });
   }
   else {
     alert("You need to be on the official Wordle site for this to work!");
@@ -156,11 +161,30 @@ function getResults() {
 }
 
 
+function getResultsArchive() {
+
+  let res = [];
+  document.querySelectorAll(".grid.row-index").forEach(row => {
+      res.push(Array.from(row.querySelectorAll(".letter-box")).map(t => [t.textContent.toLowerCase(), t.classList[1]]));
+  });
+  return res;
+}
+
+
 function enterWord(word) {
   let gameApp = document.querySelector("game-app").shadowRoot;
   let keyboard = gameApp.querySelector("game-keyboard").shadowRoot;
   [...word].forEach(letter => keyboard.querySelector(`[data-key='${letter}']`).click());
   keyboard.querySelector(".row:last-child").children[0].click();
+}
+
+
+function enterWordArchive(word) {
+  let keyboard = document.querySelector(".keyboard");
+  [...word].forEach(letter => {
+    Array.from(keyboard.querySelectorAll(".key")).find(el => el.textContent.toLowerCase() === letter).click();
+  });
+  keyboard.querySelector(".enter").click();
 }
 
 
