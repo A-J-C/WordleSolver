@@ -1,7 +1,7 @@
 {
   "name": "Wordle Solver",
   "description": "Automatically solves Wordle",
-  "version": "1.0",
+  "version": "2.0",
   "manifest_version": 3,
   "permissions": ["activeTab", "scripting"],
   "action": {
