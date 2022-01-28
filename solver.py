@@ -1,18 +1,18 @@
+from collections import Counter
 import random
-import sys
 
 solutions = open("solutions.txt", "r")
 helpers = open("helpers.txt", "r")
-counts = open("extension/words/word_counts.txt", "r")
+#counts = open("extension/words/word_counts.txt", "r")
 
 allSolutions = solutions.read().split("\n")
 allHelpers = helpers.read().split("\n")
 allHelpers = list(filter(lambda x: allHelpers.index(x) % 10 == 0, allHelpers))
-freqCounts = counts.read().split("\n")
+#freqCounts = counts.read().split("\n")
 
 solutions.close()
 helpers.close()
-counts.close()
+#counts.close()
 
 
 class Dict(dict):
@@ -20,14 +20,14 @@ class Dict(dict):
             return 0
 
 
-allCounts = {0:Dict(), 1:Dict(), 2:Dict(), 3:Dict(), 4:Dict(), 5:Dict()}
-for count in freqCounts:
-    count = count.split(",")
-
-    allCounts[int(count[0])][count[1]] = int(count[2])
-
-
 def getGuess(validSolutions, validHelpers):
+
+    allCounts = {}
+    for i in range(len(validSolutions[0])):
+        allCounts[i] = Dict()
+        counter = Counter([w[i] for w in validSolutions])
+        for gram, count in counter.items():
+            allCounts[i][gram] = count
 
     maxScore = 0
     bestWord = validSolutions[0]
@@ -112,6 +112,7 @@ def markGuess(answer, guess):
 def pruneSearchSpace(res, validSolutions, validHelpers):
 
     counts = Dict()
+    potentialNots = []
     i = 0
     for _, g, r in res:
         if r == "C":
@@ -123,12 +124,19 @@ def pruneSearchSpace(res, validSolutions, validHelpers):
 
         if r != "N":
             counts[g] += 1
+        else:
+            potentialNots += [g]  
 
         i += 1
 
     for letter, count in counts.items():
         validSolutions = list(filter(lambda sol: sol.count(letter) >= count, validSolutions))
         validHelpers = list(filter(lambda sol: sol.count(letter) >= count, validHelpers))
+
+    for pot in potentialNots:
+        if pot not in counts:
+            validSolutions = list(filter(lambda sol: pot not in sol, validSolutions))
+            validHelpers = list(filter(lambda sol: pot not in sol, validHelpers))
 
     print(len(validSolutions), len(validHelpers))
     return validSolutions, validHelpers
@@ -159,25 +167,3 @@ def scoreAlg():
     print("avg: %.2f, min: %.2f, max: %.2f" % (sum(scores) / len(scores), min(scores), max(scores)))
 
 scoreAlg()
-# random: avg: 4.91, min: 2.00, max: 13.00
-# using most information on 1 letter: avg: 6.22, min: 1.00, max: 14.00
-# using most information on 2 letters: avg: 5.01, min: 1.00, max: 10.00
-# using most frequent on 1 letter: avg: 4.65, min: 1.00, max: 11.00
-# using most frequent on 2 letters: avg: 4.64, min: 1.00, max: 11.00
-# using most frequent on 3 letters: avg: 4.64, min: 1.00, max: 11.00
-# using most frequent on 3 letters weighted: avg: 4.37, min: 1.00, max: 11.00
-# using most frequent on trigram only: avg: 4.15, min: 1.00, max: 9.00
-# using most frequent on bigram and trigram only: avg: 4.15, min: 1.00, max: 9.00
-# calculating best word dynamically: avg: 3.31, min: 1.00, max: 6.00
-# calculating best word dynamically full table: avg: 3.23, min: 2.00, max: 7.00
-# calculating best word freq per letter: avg: 3.57, min: 1.00, max: 7.00
-# calculating best word freq per letter with helpers: avg: 4.23, min: 2.00, max: 9.00
-# calculating best word freq per letter full set: avg: 4.63, min: 1.00, max: 12.00
-# calculating best word freq per letter with vowel priority full set: avg: 4.80, min: 1.00, max: 12.0
-# most information word freq per letter min small set: avg: 3.82, min: 1.00, max: 9.00
-# most information word freq per letter max small set: avg: 3.57, min: 1.00, max: 7.00
-# random small set: avg: 3.76, min: 2.00, max: 9.00
-# most information word freq per letter max small set with helpers: avg: 4.23, min: 2.00, max: 9.00
-# most information word freq per letter max small set with total freq: avg: 3.77, min: 1.00, max: 9.00
-# most information word freq per letter max small set with total freq weighted: avg: 3.53, min: 1.00, max: 7.00
-# most information word freq per letter max small set with total freq weighted and randomness: avg: 3.57, min: 1.00, max: 8.00

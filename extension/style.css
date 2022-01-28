@@ -18,3 +18,10 @@ button:hover {
   color: #eee;
   cursor: pointer;
 }
+
+#words {
+  color: #eee;
+  padding: 10px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
