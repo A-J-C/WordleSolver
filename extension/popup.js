@@ -43,7 +43,6 @@ function pruneSearchSpace(words, res) {
           i += 1
         }
 
-        console.log(words.length);
         for (let [letter, count] of Object.entries(counts)) {
           if (letter != "get") {
             words = words.filter(w => w.split(letter).length - 1 >= count);
@@ -51,7 +50,7 @@ function pruneSearchSpace(words, res) {
         }
 
         for (let pot of potentialNots) {
-          if (counts[pot] == 0) {
+          if (counts.get(pot) == 0) {
             words = words.filter(w => !w.includes(pot));
           }
         }
