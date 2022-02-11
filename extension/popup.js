@@ -1,4 +1,4 @@
-const wordleURLs = ["powerlanguage.co.uk/wordle/", "metzger.media/games/wordle-archive"];
+const wordleURLs = ["powerlanguage.co.uk/wordle/", "metzger.media/games/wordle-archive", "nytimes.com/games/wordle"];
 
 let nextWord = document.getElementById("next");
 let wordDiv = document.getElementById("words");
